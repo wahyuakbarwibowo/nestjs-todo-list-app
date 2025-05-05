@@ -11,12 +11,23 @@ import {
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Todos')
 @Controller('todos')
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Get()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'isDone', required: false, type: Boolean })
+  @ApiQuery({
+    name: 'priority',
+    required: false,
+    enum: ['low', 'medium', 'high'],
+  })
+  @ApiQuery({ name: 'dueBefore', required: false, type: String })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
