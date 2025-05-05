@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateTodoDto {
   @IsNotEmpty()
@@ -8,4 +14,12 @@ export class CreateTodoDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueDate?: string;
+
+  @IsOptional()
+  @IsEnum(['low', 'medium', 'high'])
+  priority?: 'low' | 'medium' | 'high';
 }

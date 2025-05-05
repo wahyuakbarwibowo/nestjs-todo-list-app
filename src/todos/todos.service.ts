@@ -13,7 +13,13 @@ export class TodosService {
   ) {}
 
   create(createTodoDto: CreateTodoDto): Promise<Todo> {
-    const todo = this.todosRepository.create(createTodoDto);
+    const todo = this.todosRepository.create({
+      ...createTodoDto,
+      dueDate: createTodoDto.dueDate
+        ? new Date(createTodoDto.dueDate)
+        : undefined,
+      priority: createTodoDto.priority || 'medium',
+    });
     return this.todosRepository.save(todo);
   }
 
@@ -21,14 +27,27 @@ export class TodosService {
     page: number;
     limit: number;
     isDone?: boolean;
+    priority?: 'low' | 'medium' | 'high';
+    dueBefore?: string;
   }): Promise<Todo[]> {
-    const { page, limit, isDone } = options;
-    const where = isDone !== undefined ? { isDone } : {};
+    const { page, limit, isDone, priority, dueBefore } = options;
+
+    const where: any = {};
+    if (isDone !== undefined) {
+      where.isDone = isDone;
+    }
+    if (priority) {
+      where.priority = priority;
+    }
+    if (dueBefore) {
+      where.dueDate = { $lte: new Date(dueBefore) };
+    }
+
     return this.todosRepository.find({
       where,
       skip: (page - 1) * limit,
       take: limit,
-      order: { id: 'DESC' },
+      order: { dueDate: 'DESC' },
     });
   }
 
@@ -42,7 +61,19 @@ export class TodosService {
 
   async update(id: number, updateTodoDto: UpdateTodoDto): Promise<Todo> {
     const todo = await this.findOne(id);
-    todo.isDone = updateTodoDto.isDone;
+
+    if (updateTodoDto.isDone !== undefined) {
+      todo.isDone = updateTodoDto.isDone;
+    }
+
+    if (updateTodoDto.dueDate !== undefined) {
+      todo.dueDate = new Date(updateTodoDto.dueDate);
+    }
+
+    if (updateTodoDto.priority !== undefined) {
+      todo.priority = updateTodoDto.priority;
+    }
+
     return this.todosRepository.save(todo);
   }
 

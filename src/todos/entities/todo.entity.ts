@@ -13,4 +13,10 @@ export class Todo {
 
   @Column({ default: false })
   isDone: boolean;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  dueDate?: Date;
+
+  @Column({ type: 'enum', enum: ['low', 'medium', 'high'], default: 'medium' })
+  priority: 'low' | 'medium' | 'high';
 }

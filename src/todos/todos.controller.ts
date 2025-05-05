@@ -21,11 +21,15 @@ export class TodosController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('isDone') isDone?: string,
+    @Query('priority') priority?: 'low' | 'medium' | 'high',
+    @Query('dueBefore') dueBefore?: string,
   ) {
     return this.todosService.findAll({
       page: Number(page),
       limit: Number(limit),
       isDone: isDone === undefined ? undefined : isDone === 'true',
+      priority,
+      dueBefore,
     });
   }
 
