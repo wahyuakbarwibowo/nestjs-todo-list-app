@@ -17,20 +17,27 @@ export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Get()
-  findAll(
+  async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('isDone') isDone?: string,
     @Query('priority') priority?: 'low' | 'medium' | 'high',
     @Query('dueBefore') dueBefore?: string,
   ) {
-    return this.todosService.findAll({
+    const result = await this.todosService.findAll({
       page: Number(page),
       limit: Number(limit),
       isDone: isDone === undefined ? undefined : isDone === 'true',
       priority,
       dueBefore,
     });
+
+    return {
+      data: result.data,
+      totalItems: result.total,
+      currentPage: Number(page),
+      totalPages: Math.ceil(result.total / Number(limit)),
+    };
   }
 
   @Get(':id')

@@ -23,32 +23,39 @@ export class TodosService {
     return this.todosRepository.save(todo);
   }
 
-  findAll(options: {
+  async findAll(options: {
     page: number;
     limit: number;
     isDone?: boolean;
     priority?: 'low' | 'medium' | 'high';
     dueBefore?: string;
-  }): Promise<Todo[]> {
+  }): Promise<{ data: Todo[]; total: number }> {
     const { page, limit, isDone, priority, dueBefore } = options;
 
-    const where: any = {};
+    const queryBuilder = this.todosRepository.createQueryBuilder('todo');
+
     if (isDone !== undefined) {
-      where.isDone = isDone;
-    }
-    if (priority) {
-      where.priority = priority;
-    }
-    if (dueBefore) {
-      where.dueDate = { $lte: new Date(dueBefore) };
+      queryBuilder.andWhere('todo.isDone = :isDone', { isDone });
     }
 
-    return this.todosRepository.find({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { dueDate: 'DESC' },
-    });
+    if (priority) {
+      queryBuilder.andWhere('todo.priority = :priority', { priority });
+    }
+
+    if (dueBefore) {
+      queryBuilder.andWhere('todo.dueDate <= :dueBefore', {
+        dueBefore: new Date(dueBefore),
+      });
+    }
+
+    queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('todo.dueDate', 'ASC');
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return { data, total };
   }
 
   async findOne(id: number): Promise<Todo> {
