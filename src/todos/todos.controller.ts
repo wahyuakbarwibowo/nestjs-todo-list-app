@@ -3,11 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
+import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @Controller('todos')
 export class TodosController {
@@ -20,17 +23,25 @@ export class TodosController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.todosService.findOne(+id);
+    const todo = this.todosService.findOne(+id);
+    if (!todo) {
+      throw new NotFoundException('Todo not found');
+    }
+    return todo;
   }
 
   @Post()
-  create(@Body() body: { title: string; description?: string }) {
+  create(@Body() body: CreateTodoDto) {
     return this.todosService.create(body.title, body.description);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: { isDone: boolean }) {
-    return this.todosService.update(+id, body.isDone);
+  update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
+    const todo = this.todosService.update(+id, updateTodoDto.isDone);
+    if (!todo) {
+      throw new NotFoundException('Todo not found');
+    }
+    return todo;
   }
 
   @Delete(':id')
